@@ -81,3 +81,12 @@ export function findLibraryItem(link: string): LoopstreamItem | undefined {
   return libraryItems.find((item) => item.link === link);
 }
 
+export function isYouTubeUrl(value: string): boolean {
+  try {
+    const host = new URL(value).hostname.toLowerCase();
+    return host === "youtu.be" || host === "youtube.com" || host.endsWith(".youtube.com");
+  } catch {
+    return false;
+  }
+}
+

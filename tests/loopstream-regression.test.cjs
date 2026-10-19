@@ -86,3 +86,36 @@ test("loopstream supports a direct HLS URL and rejects an unsupported media URL"
   });
   assert.deepEqual(unsupported, []);
 });
+
+test("loopstream delegates YouTube embeds to the existing YouTube resolver", async () => {
+  const youtubeContext = {
+    kvStore: {
+      get: async () => undefined,
+      set: async () => undefined,
+    },
+    axios: {
+      get: async () => ({ data: "<html></html>" }),
+      post: async (url) => {
+        assert.match(url, /youtubei\/v1\/player/);
+        return {
+          data: {
+            streamingData: {
+              hlsManifestUrl: "https://youtube.example/video/master.m3u8",
+              formats: [],
+            },
+          },
+        };
+      },
+    },
+  };
+
+  const streams = await stream.getStream({
+    link: "https://youtu.be/zFXwHhdOwdA",
+    type: "movie",
+    providerContext: youtubeContext,
+  });
+
+  assert.equal(streams.length, 1);
+  assert.equal(streams[0].link, "https://youtube.example/video/master.m3u8");
+  assert.equal(streams[0].type, "m3u8");
+});

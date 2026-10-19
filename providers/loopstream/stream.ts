@@ -1,5 +1,6 @@
 import { ProviderContext, Stream } from "../types";
-import { findLibraryItem, LoopstreamItem } from "./shared";
+import { findLibraryItem, isYouTubeUrl, LoopstreamItem } from "./shared";
+import { getStream as getYouTubeStream } from "../youtube/stream";
 
 export const getStream = async function ({
   link,
@@ -20,6 +21,15 @@ export const getStream = async function ({
 
   const item = findLibraryItem(link);
   if (!item) {
+    if (isYouTubeUrl(link)) {
+      return getYouTubeStream({
+        link,
+        type,
+        signal: signal || new AbortController().signal,
+        providerContext,
+      });
+    }
+
     const directStream = createDirectStream(link);
     if (directStream) {
       console.log("[loopstream] accepted normalized direct media URL", directStream);
@@ -31,6 +41,15 @@ export const getStream = async function ({
   }
 
   if (item.sourceType === "embed") {
+    if (isYouTubeUrl(item.videoUrl)) {
+      return getYouTubeStream({
+        link: item.videoUrl,
+        type,
+        signal: signal || new AbortController().signal,
+        providerContext,
+      });
+    }
+
     console.log("[loopstream] embed source requires an extractor", { link, title: item.title });
     return [];
   }

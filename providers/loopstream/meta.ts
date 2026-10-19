@@ -1,5 +1,5 @@
 import { Info, ProviderContext } from "../types";
-import { findLibraryItem } from "./shared";
+import { findLibraryItem, isYouTubeUrl } from "./shared";
 
 export const getMeta = async function ({
   link,
@@ -13,7 +13,7 @@ export const getMeta = async function ({
     throw new Error(`Loopstream item not found: ${link}`);
   }
 
-  if (item.sourceType === "embed") {
+  if (item.sourceType === "embed" && !isYouTubeUrl(item.videoUrl)) {
     throw new Error(
       `Loopstream embed source is unsupported: ${item.videoUrl}`,
     );
