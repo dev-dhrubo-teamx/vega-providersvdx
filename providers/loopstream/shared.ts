@@ -46,6 +46,21 @@ export const libraryItems: LoopstreamItem[] = [
     tags: [],
     tmdbId: "872906",
   },
+  {
+    title: "Stranger Things",
+    link: "mylibrary://stranger-things",
+    image: "https://image.tmdb.org/t/p/w500/uOOtwVbSr4QDjAGIifLDwpb2Pdl.jpg",
+    category: "Anime",
+    year: "2016",
+    synopsis:
+      "When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces, and one strange little girl.",
+    sourceType: "mp4",
+    videoUrl:
+      "https://ia800107.us.archive.org/5/items/upload-67642d96/Daemons-of-the-Shadow-Realm-S01E06-720p-HEVC-%5BHIN-ENG-JAP%5D.mp4",
+    language: "Bangla",
+    tags: [],
+    tmdbId: "66732",
+  },
   // Paste each future PHP-generated object here as a new comma-terminated
   // item. Keep every link stable and unique.
 ];
