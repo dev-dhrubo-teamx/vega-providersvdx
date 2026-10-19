@@ -506,5 +506,13 @@
     "type": "global",
     "disabled": false,
     "hasSettings": true
+  },
+  {
+    "display_name": "Loopstream",
+    "value": "loopstream",
+    "version": "1.0",
+    "icon": "",
+    "type": "global",
+    "disabled": false
   }
 ]
