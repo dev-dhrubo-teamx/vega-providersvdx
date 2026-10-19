@@ -1,9 +1,7 @@
-import { Content } from "../types";
-
 export type LoopstreamCategory = "Movies" | "Anime" | "My Videos";
 export type LoopstreamSourceType = "mp4" | "m3u8" | "embed";
 
-export interface LoopstreamItem extends Content {
+export interface LoopstreamItem {
   title: string;
   link: string;
   image: string;
