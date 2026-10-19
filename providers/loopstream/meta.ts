@@ -27,7 +27,10 @@ export const getMeta = async function ({
         directLinks: [
           {
             title: item.title,
-            link: item.link,
+            // The catalog link is only an internal lookup key. Expose the
+            // actual media URL to Vega so playback never has to treat a
+            // mylibrary:// URI as a playable video source.
+            link: item.videoUrl,
             type: "movie",
           },
         ],
