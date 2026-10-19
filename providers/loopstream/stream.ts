@@ -20,6 +20,12 @@ export const getStream = async function ({
 
   const item = findLibraryItem(link) || findItemByVideoUrl(link);
   if (!item) {
+    const directStream = createDirectStream(link);
+    if (directStream) {
+      console.log("[loopstream] accepted normalized direct media URL", directStream);
+      return [directStream];
+    }
+
     console.log("[loopstream] no library item for stream link", link);
     return [];
   }
@@ -67,5 +73,27 @@ function findItemByVideoUrl(videoUrl: string) {
 function mapMediaType(sourceType: LoopstreamItem["sourceType"]): "mp4" | "m3u8" | null {
   if (sourceType === "mp4" || sourceType === "m3u8") return sourceType;
   return null;
+}
+
+function createDirectStream(link: string): Stream | null {
+  try {
+    const mediaUrl = new URL(link).href;
+    if (!/^https?:$/i.test(new URL(mediaUrl).protocol)) return null;
+
+    const pathname = new URL(mediaUrl).pathname;
+    const extension = pathname.match(/\.(mp4|m3u8)$/i)?.[1]?.toLowerCase();
+    if (!extension) return null;
+
+    return {
+      server: "Loopstream direct",
+      link: mediaUrl,
+      type: extension,
+      ...(extension === "mp4" && /(?:^|[._-])(2160|1080|720|480|360)p?(?:[._-]|$)/i.test(mediaUrl)
+        ? { quality: mediaUrl.match(/(?:^|[._-])(2160|1080|720|480|360)p?(?:[._-]|$)/i)?.[1] }
+        : {}),
+    };
+  } catch {
+    return null;
+  }
 }
 
