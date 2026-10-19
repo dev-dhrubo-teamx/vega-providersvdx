@@ -13,6 +13,16 @@ export const getMeta = async function ({
     throw new Error(`Loopstream item not found: ${link}`);
   }
 
+  if (item.sourceType === "embed") {
+    throw new Error(
+      `Loopstream embed source is unsupported: ${item.videoUrl}`,
+    );
+  }
+
+  if (item.sourceType !== "mp4" && item.sourceType !== "m3u8") {
+    throw new Error(`Loopstream source type is unsupported: ${item.sourceType}`);
+  }
+
   return {
     title: item.title,
     image: item.image || "",
@@ -23,7 +33,7 @@ export const getMeta = async function ({
     tags: item.tags,
     linkList: [
       {
-        title: item.sourceType === "embed" ? "Embed source" : "Video",
+        title: "Video",
         directLinks: [
           {
             title: item.title,

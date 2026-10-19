@@ -1,5 +1,5 @@
 import { ProviderContext, Stream } from "../types";
-import { findLibraryItem, libraryItems, LoopstreamItem } from "./shared";
+import { findLibraryItem, LoopstreamItem } from "./shared";
 
 export const getStream = async function ({
   link,
@@ -18,7 +18,7 @@ export const getStream = async function ({
     return [];
   }
 
-  const item = findLibraryItem(link) || findItemByVideoUrl(link);
+  const item = findLibraryItem(link);
   if (!item) {
     const directStream = createDirectStream(link);
     if (directStream) {
@@ -44,8 +44,20 @@ export const getStream = async function ({
   let mediaUrl: string;
   try {
     mediaUrl = new URL(item.videoUrl).href;
+    if (!/^https?:$/i.test(new URL(mediaUrl).protocol)) throw new Error("unsupported protocol");
   } catch {
     console.log("[loopstream] invalid video URL", { title: item.title, videoUrl: item.videoUrl });
+    return [];
+  }
+
+  const urlType = getMediaTypeFromUrl(mediaUrl);
+  if (urlType && urlType !== mediaType) {
+    console.log("[loopstream] source type does not match URL", {
+      title: item.title,
+      sourceType: mediaType,
+      videoUrl: mediaUrl,
+      urlType,
+    });
     return [];
   }
 
@@ -66,10 +78,6 @@ export const getStream = async function ({
   return [stream];
 };
 
-function findItemByVideoUrl(videoUrl: string) {
-  return libraryItems.find((item) => item.videoUrl === videoUrl);
-}
-
 function mapMediaType(sourceType: LoopstreamItem["sourceType"]): "mp4" | "m3u8" | null {
   if (sourceType === "mp4" || sourceType === "m3u8") return sourceType;
   return null;
@@ -81,7 +89,7 @@ function createDirectStream(link: string): Stream | null {
     if (!/^https?:$/i.test(new URL(mediaUrl).protocol)) return null;
 
     const pathname = new URL(mediaUrl).pathname;
-    const extension = pathname.match(/\.(mp4|m3u8)$/i)?.[1]?.toLowerCase();
+    const extension = getMediaTypeFromUrl(mediaUrl);
     if (!extension) return null;
 
     return {
@@ -95,5 +103,13 @@ function createDirectStream(link: string): Stream | null {
   } catch {
     return null;
   }
+}
+
+function getMediaTypeFromUrl(mediaUrl: string): "mp4" | "m3u8" | null {
+  const pathname = new URL(mediaUrl).pathname;
+  return pathname.match(/\.(mp4|m3u8)$/i)?.[1]?.toLowerCase() as
+    | "mp4"
+    | "m3u8"
+    | undefined || null;
 }
 

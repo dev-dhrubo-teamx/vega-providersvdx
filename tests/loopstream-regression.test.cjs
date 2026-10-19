@@ -22,6 +22,7 @@ function load(moduleName) {
 
 const meta = load("meta");
 const stream = load("stream");
+const posts = load("posts");
 const providerContext = {};
 const archiveUrl =
   "https://ia800107.us.archive.org/5/items/upload-67642d96/Daemons-of-the-Shadow-Realm-S01E06-720p-HEVC-%5BHIN-ENG-JAP%5D.mp4";
@@ -55,4 +56,33 @@ test("loopstream resolves both the internal ID and linkList URL to mp4", async (
       },
     ]);
   }
+});
+
+test("loopstream routes library items by their generated category", async () => {
+  assert.deepEqual(
+    (await posts.getPosts({ filter: "Anime", page: 1 })).map((post) => post.link),
+    ["mylibrary://stranger-things"],
+  );
+});
+
+test("loopstream supports a direct HLS URL and rejects an unsupported media URL", async () => {
+  const hls = await stream.getStream({
+    link: "https://cdn.example/video.m3u8?token=test",
+    type: "movie",
+    providerContext,
+  });
+  assert.deepEqual(hls, [
+    {
+      server: "Loopstream direct",
+      link: "https://cdn.example/video.m3u8?token=test",
+      type: "m3u8",
+    },
+  ]);
+
+  const unsupported = await stream.getStream({
+    link: "https://cdn.example/video.webm",
+    type: "movie",
+    providerContext,
+  });
+  assert.deepEqual(unsupported, []);
 });
