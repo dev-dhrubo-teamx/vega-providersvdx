@@ -29,6 +29,20 @@ export interface LoopstreamItem extends Content {
  * pasted without editing catalog.ts, posts.ts, meta.ts, or stream.ts.
  */
 export const libraryItems: LoopstreamItem[] = [
+  {
+    title: "Alu",
+    link: "mylibrary://alu",
+    image: "https://image.tmdb.org/t/p/w500/zAB9sS1Z1jAODvfxjopQisrgGQK.jpg",
+    category: "Movies",
+    year: "2024",
+    synopsis: "Theater at Hager Fikir Theater",
+    sourceType: "mp4",
+    videoUrl:
+      "https://ia800107.us.archive.org/5/items/upload-67642d96/Daemons-of-the-Shadow-Realm-S01E06-720p-HEVC-%5BHIN-ENG-JAP%5D.mp4",
+    language: "Bangla",
+    tags: [],
+    tmdbId: "1241202",
+  },
   // Initial test item from the PHP generator. Its video filename appears to
   // describe another title; both supplied values are intentionally preserved.
   {
