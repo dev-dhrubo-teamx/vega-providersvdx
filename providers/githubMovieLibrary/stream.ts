@@ -4,7 +4,7 @@ import { DEFAULT_MOVIES_URL, parseMovieLibrary } from "./library";
 export const getStream = async function ({ link, providerContext }: { link: string; type: string; signal?: AbortSignal; providerContext: ProviderContext; isDownload?: boolean }): Promise<Stream[]> {
   try {
     const url = new URL(link);
-    if (!/^https?:$/.test(url.protocol) || !/\.mp4$/i.test(url.pathname)) return [];
+    if (!/^https?:$/.test(url.protocol) || !/\.(mp4|m3u8)$/i.test(url.pathname)) return [];
 
     let quality: string | undefined;
     try {
@@ -30,7 +30,7 @@ export const getStream = async function ({ link, providerContext }: { link: stri
     const stream: Stream = {
       server: "GitHub Movie Library direct",
       link: url.href,
-      type: "mp4",
+      type: /\.m3u8$/i.test(url.pathname) ? "m3u8" : "mp4",
       ...(quality ? { quality } : {}),
     };
     console.log("GitHub Movie Library direct stream", { host: url.hostname, type: stream.type, quality: stream.quality || "unknown" });

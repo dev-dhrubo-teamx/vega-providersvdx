@@ -14,14 +14,14 @@ assert.equal(library.movieIdFromLink(library.movieLink("x")), "x");
 const streamOutput = buildSync({ entryPoints: [path.join(__dirname, "../providers/githubMovieLibrary/stream.ts")], bundle: true, platform: "node", format: "cjs", write: false }).outputFiles[0].text;
 const streamModule = { exports: {} };
 new Function("require", "exports", "module", streamOutput)(require, streamModule.exports, streamModule);
-const directUrl = "https://media.example.test/library-720.mp4";
+const directUrl = "https://media.example.test/library-480.m3u8";
 const streamContext = {
   commonHeaders: {},
   kvStore: { get: async () => "https://example.test/movies.json" },
-  axios: { get: async () => ({ data: { movies: [{ id: "movie-1", title: "Movie 1", qualities: [{ label: "720p", url: directUrl, type: "mp4" }] }] } }) },
+  axios: { get: async () => ({ data: { movies: [{ id: "movie-1", title: "Movie 1", qualities: [{ label: "480p", url: directUrl, type: "m3u8" }] }] } }) },
 };
 streamModule.exports.getStream({ link: directUrl, type: "movie", providerContext: streamContext }).then((streams) => {
-  assert.deepStrictEqual(streams, [{ server: "GitHub Movie Library direct", link: directUrl, type: "mp4", quality: "720p" }]);
+  assert.deepStrictEqual(streams, [{ server: "GitHub Movie Library direct", link: directUrl, type: "m3u8", quality: "480p" }]);
   console.log("githubMovieLibrary tests passed");
 }).catch((error) => {
   console.error(error);
