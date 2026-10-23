@@ -1,5 +1,5 @@
 export const DEFAULT_MOVIES_URL =
-  "https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY/main/movies.json";
+  "https://raw.githubusercontent.com/dev-dhrubo-teamx/vega-providersvdx/refs/heads/main/movies.json";
 
 export interface MovieQuality {
   label?: string;
