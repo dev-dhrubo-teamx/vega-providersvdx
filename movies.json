@@ -1,0 +1,16 @@
+{
+  "movies": [
+    {
+      "id": "sample-movie-001",
+      "title": "Sample Movie",
+      "poster": "https://example.com/poster.jpg",
+      "description": "Sample description.",
+      "year": 2025,
+      "genres": ["Action", "Adventure"],
+      "qualities": [
+        { "label": "480p", "url": "https://example.com/sample-480.mp4", "type": "mp4" },
+        { "label": "720p", "url": "https://example.com/sample-720.mp4", "type": "mp4" }
+      ]
+    }
+  ]
+}

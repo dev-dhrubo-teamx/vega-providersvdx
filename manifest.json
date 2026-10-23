@@ -1,5 +1,14 @@
 [
   {
+    "display_name": "GitHub Movie Library",
+    "value": "githubMovieLibrary",
+    "version": "1.0",
+    "icon": "",
+    "type": "global",
+    "disabled": false,
+    "hasSettings": true
+  },
+  {
     "display_name": "VMovies",
     "value": "vega",
     "version": "2.51",
