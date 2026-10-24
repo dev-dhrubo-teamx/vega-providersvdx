@@ -1,5 +1,5 @@
 import { ProviderContext, Stream } from "../types";
-import { findLibraryItem, isYouTubeUrl, LoopstreamItem } from "./shared";
+import { findLibraryItem, findLibraryMedia, isYouTubeUrl, LoopstreamItem } from "./shared";
 import { getStream as getYouTubeStream } from "../youtube/stream";
 
 export const getStream = async function ({
@@ -21,6 +21,18 @@ export const getStream = async function ({
 
   const item = findLibraryItem(link);
   if (!item) {
+    const knownMedia = findLibraryMedia(link);
+    if (knownMedia) {
+      if (knownMedia.sourceType === "embed") return [];
+      const streamType = mapMediaType(knownMedia.sourceType);
+      if (!streamType) return [];
+      return [{
+        server: "Loopstream direct",
+        link,
+        type: streamType,
+        ...(knownMedia.quality ? { quality: knownMedia.quality } : {}),
+      }];
+    }
     if (isYouTubeUrl(link)) {
       return getYouTubeStream({
         link,
@@ -41,9 +53,10 @@ export const getStream = async function ({
   }
 
   if (item.sourceType === "embed") {
-    if (isYouTubeUrl(item.videoUrl)) {
+    const embedUrl = item.videoUrl;
+    if (embedUrl && isYouTubeUrl(embedUrl)) {
       return getYouTubeStream({
-        link: item.videoUrl,
+        link: embedUrl,
         type,
         signal: signal || new AbortController().signal,
         providerContext,
@@ -60,10 +73,14 @@ export const getStream = async function ({
     return [];
   }
 
+  if (!item.videoUrl) return [];
   let mediaUrl: string;
   try {
-    mediaUrl = new URL(item.videoUrl).href;
-    if (!/^https?:$/i.test(new URL(mediaUrl).protocol)) throw new Error("unsupported protocol");
+    // videoUrl is already a final media URL. Validate it, but preserve the
+    // exact generator-supplied string in the returned Stream.
+    new URL(item.videoUrl);
+    if (!/^https?:$/i.test(new URL(item.videoUrl).protocol)) throw new Error("unsupported protocol");
+    mediaUrl = item.videoUrl;
   } catch {
     console.log("[loopstream] invalid video URL", { title: item.title, videoUrl: item.videoUrl });
     return [];
@@ -104,8 +121,9 @@ function mapMediaType(sourceType: LoopstreamItem["sourceType"]): "mp4" | "m3u8" 
 
 function createDirectStream(link: string): Stream | null {
   try {
-    const mediaUrl = new URL(link).href;
-    if (!/^https?:$/i.test(new URL(mediaUrl).protocol)) return null;
+    const parsed = new URL(link);
+    if (!/^https?:$/i.test(parsed.protocol)) return null;
+    const mediaUrl = link;
 
     const pathname = new URL(mediaUrl).pathname;
     const extension = getMediaTypeFromUrl(mediaUrl);

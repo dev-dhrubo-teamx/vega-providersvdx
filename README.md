@@ -465,3 +465,75 @@ export const getStream = async function ({
 This workflow allows you to quickly test and debug new providers before deploying them.
 
 Follow this structure and naming convention to ensure your provider integrates smoothly with the project.
+
+## Loopstream PHP generator workflow
+
+The PHP admin generator is not part of this repository. Its generated objects
+belong in `providers/loopstream/shared.ts`, inside the `generatedLibraryItems`
+array (each object must be followed by a comma). Do not paste these objects
+into `catalog.ts`, `posts.ts`, `meta.ts`, or `stream.ts`; those modules consume
+the normalized array and implement the Vega provider contract.
+
+Generated movie example:
+
+```ts
+{
+  title: "Example Movie",
+  link: "mylibrary://example-movie",
+  image: "https://image.example/poster.jpg",
+  category: "Movies",
+  mediaType: "Movie",
+  year: "2025",
+  synopsis: "Example synopsis",
+  audioType: "Original",
+  language: "English",
+  tags: ["Action"],
+  tmdbId: "12345",
+  sourceType: "mp4",
+  videoUrl: "https://cdn.example/example-movie-1080.mp4",
+},
+```
+
+Generated series or anime example:
+
+```ts
+{
+  title: "Example Series",
+  link: "mylibrary://example-series",
+  image: "https://image.example/series.jpg",
+  category: "TV Series", // or "Anime"
+  mediaType: "TV Series",
+  year: "2025",
+  synopsis: "Example synopsis",
+  audioType: "Hindi Dub",
+  language: "Hindi",
+  tags: ["Drama"],
+  tmdbId: "67890",
+  episodes: [
+    {
+      episode: 1,
+      title: "Pilot",
+      quality: "720p",
+      sourceType: "mp4",
+      videoUrl: "https://cdn.example/example-series-s01e01-720.mp4",
+    },
+  ],
+},
+```
+
+The provider validates URLs, ignores invalid episode entries, removes duplicate
+links, groups multiple quality/source links under the same episode, and keeps
+the original `videoUrl` string when returning a `Stream`. Only `mp4`, `m3u8`,
+and the existing YouTube-compatible embed path are supported; unsupported
+embeds are not fabricated into playable URLs.
+
+After pasting an object:
+
+1. Run `npm run test:github-library` and `node --test tests/loopstream-regression.test.cjs`.
+2. Run `npm run build`.
+3. Restart or refresh the provider source in Vega and select `loopstream`.
+4. Open the category, select the parent title, then select an episode and its quality/source link.
+5. Enable Vega's existing External player preference if using VLC or MX Player.
+
+The separate `githubMovieLibrary` provider continues to read `movies.json`; it
+does not consume PHP generator objects or call `loopstream`.
