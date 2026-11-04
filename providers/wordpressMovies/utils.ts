@@ -31,6 +31,13 @@ export function decodeHtml(value: string, cheerio: ProviderContext["cheerio"]): 
   return cheerio.load(`<div>${value}</div>`)("div").text().trim();
 }
 
+/** Extract readable post copy while excluding media, navigation, and video-link labels. */
+export function extractDescription(value: string, cheerio: ProviderContext["cheerio"]): string {
+  const $ = cheerio.load(value || "");
+  $("img, picture, figure, video, audio, source, script, style, nav, header, footer, a").remove();
+  return $("body").text().replace(/\s+/g, " ").trim();
+}
+
 export function getFeaturedImage(post: WordPressPost): string {
   const media = post._embedded?.["wp:featuredmedia"]?.[0];
   return String(media?.source_url || media?.media_details?.sizes?.full?.source_url || "");

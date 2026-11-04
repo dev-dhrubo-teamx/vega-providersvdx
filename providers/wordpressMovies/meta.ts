@@ -1,5 +1,5 @@
 import { Info, ProviderContext } from "../types";
-import { decodeHtml, encodePlayback, extractMp4Urls, getFeaturedImage, getPost, WordPressPost } from "./utils";
+import { decodeHtml, encodePlayback, extractDescription, extractMp4Urls, getFeaturedImage, getPost, WordPressPost } from "./utils";
 
 function categories(post: WordPressPost): string[] {
   return (post._embedded?.["wp:term"] || []).flatMap((groups: any[]) => groups || [])
@@ -14,7 +14,10 @@ export const getMeta = async function ({ link, providerContext, signal }: {
   if (!Number.isInteger(postId) || postId < 1) throw new Error("WordPress Movies: invalid post ID");
   const post = await getPost(providerContext, postId, signal);
   const title = decodeHtml(post.title?.rendered || post.slug || `Post ${post.id}`, providerContext.cheerio);
-  const description = decodeHtml(post.content?.rendered || post.excerpt?.rendered || "", providerContext.cheerio);
+  const description = extractDescription(
+    post.content?.rendered || post.excerpt?.rendered || "",
+    providerContext.cheerio,
+  );
   const sources = extractMp4Urls(post.content?.rendered || "", providerContext.cheerio);
   const descriptor = encodePlayback({ postId, sources });
   return {
