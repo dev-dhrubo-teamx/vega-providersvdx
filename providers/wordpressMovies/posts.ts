@@ -20,8 +20,37 @@ async function requestPosts(providerContext: ProviderContext, page: number, sear
     params,
     signal,
   });
-  if (!Array.isArray(response.data)) throw new Error("WordPress posts response was not an array");
-  return response.data.map((post: WordPressPost) => mapPost(post, providerContext.cheerio));
+  const data = normalizePostsResponse(response);
+  return data.map((post: WordPressPost) => mapPost(post, providerContext.cheerio));
+}
+
+function normalizePostsResponse(response: { data?: unknown; status?: number; headers?: unknown }): WordPressPost[] {
+  let data = response.data;
+  if (typeof data === "string") {
+    try {
+      data = JSON.parse(data);
+    } catch {
+      throw responseError(response, "response data was not valid JSON text");
+    }
+  }
+  if (Array.isArray(data)) return data as WordPressPost[];
+
+  const wpError = data && typeof data === "object" ? data as Record<string, unknown> : undefined;
+  const code = typeof wpError?.code === "string" ? wpError.code : "none";
+  const message = typeof wpError?.message === "string" ? wpError.message : "none";
+  throw responseError(response, `expected a root JSON array; received ${describeType(data)} (WordPress code: ${code}, message: ${message})`);
+}
+
+function describeType(value: unknown): string {
+  if (value === null) return "null";
+  if (Array.isArray(value)) return "array";
+  return typeof value;
+}
+
+function responseError(response: { data?: unknown; status?: number; headers?: unknown }, detail: string): Error {
+  const headers = response.headers && typeof response.headers === "object" ? response.headers as Record<string, unknown> : {};
+  const contentType = String(headers["content-type"] || headers["Content-Type"] || "unknown");
+  return new Error(`WordPress Movies posts stage failed: HTTP ${response.status ?? "unknown"}; content-type ${contentType}; ${detail}`);
 }
 
 export const getPosts = async function ({ filter, page, signal, providerContext }: {

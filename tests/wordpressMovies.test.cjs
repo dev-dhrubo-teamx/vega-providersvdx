@@ -33,6 +33,14 @@ function apiContext(posts, categories = []) {
   };
 }
 
+function stringResponseContext(body, headers = { "content-type": "text/plain" }) {
+  return {
+    cheerio,
+    commonHeaders: {},
+    axios: { get: async () => ({ data: JSON.stringify(body), status: 200, headers }) },
+  };
+}
+
 const post = (content) => ({
   id: 7,
   slug: "authorized-movie",
@@ -96,6 +104,20 @@ test("maps the verified root-array response and post ID 6", async () => {
   assert.equal(result[0].title, verified.title.rendered);
   assert.equal(result[0].link, "6");
   assert.equal(result[0].image, "https://images.example/media-11.jpg");
+});
+
+test("maps a valid JSON array returned as a string by the HTTP adapter", async () => {
+  const verified = { id: 6, slug: "udaala-2025", title: { rendered: "Udaala 2025" }, _embedded: { "wp:featuredmedia": [{ source_url: "https://images.example/media-11.jpg" }] } };
+  const posts = loadModule("providers/wordpressMovies/posts.ts", { "../types": {}, "./utils": loadModule("providers/wordpressMovies/utils.ts", { "../types": {} }) });
+  const result = await posts.getPosts({ filter: "latest", page: 1, providerValue: "wordpressMovies", signal: new AbortController().signal, providerContext: stringResponseContext([verified]) });
+  assert.equal(result[0].link, "6");
+  assert.equal(result[0].title, "Udaala 2025");
+  assert.equal(result[0].image, "https://images.example/media-11.jpg");
+});
+
+test("does not hide a WordPress error object", async () => {
+  const posts = loadModule("providers/wordpressMovies/posts.ts", { "../types": {}, "./utils": loadModule("providers/wordpressMovies/utils.ts", { "../types": {} }) });
+  await assert.rejects(posts.getPosts({ filter: "latest", page: 1, providerValue: "wordpressMovies", signal: new AbortController().signal, providerContext: { cheerio, commonHeaders: {}, axios: { get: async () => ({ data: { code: "rest_forbidden", message: "Forbidden" }, status: 403, headers: { "content-type": "application/json" } }) } } }), /HTTP 403.*rest_forbidden.*Forbidden/);
 });
 
 test("removes image and navigation/video-link markup from the description", async () => {
